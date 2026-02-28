@@ -41,6 +41,8 @@
     let minesGenerated = false;
 
     const ADMIN_USERNAME = "N3XUS_C0R3";
+    const ADMIN_PASSWORD = "GH05T_4DM1N";
+    
     let currentRole = 'guest';
     let currentUser = null;
     let users = [];
@@ -327,8 +329,10 @@
             html = `
                 <div class="register-box">
                     <div class="register-title">🔐 РЕГИСТРАЦИЯ</div>
-                    <input type="text" class="register-input" id="usernameInput" placeholder="твой ник" value="Игрок_${Math.floor(Math.random() * 1000)}">
-                    <button class="register-button" id="registerBtn">🌟 СТАТЬ ЮЗЕРОМ</button>
+                    <input type="text" class="register-input" id="usernameInput" placeholder="имя пользователя" value="Игрок_${Math.floor(Math.random() * 1000)}">
+                    <input type="password" class="register-input" id="passwordInput" placeholder="пароль">
+                    <div id="registerError" class="error-message" style="display: none;">Введите пароль</div>
+                    <button class="register-button" id="registerBtn">🌟 ЗАРЕГИСТРИРОВАТЬСЯ</button>
                 </div>
                 <div class="leaderboard">
                     <h3>🏆 ТОП ИГРОКОВ</h3>
@@ -387,10 +391,24 @@
         if (currentRole === 'guest') {
             document.getElementById('registerBtn')?.addEventListener('click', () => {
                 const nick = document.getElementById('usernameInput')?.value.trim() || 'Игрок';
+                const password = document.getElementById('passwordInput')?.value.trim() || '';
+                const errorEl = document.getElementById('registerError');
                 
-                console.log('📡 [POST] /api/register', { username: nick });
+                if (!password) {
+                    errorEl.style.display = 'block';
+                    errorEl.textContent = 'Введите пароль';
+                    gameStatusEl.textContent = '❌ Пароль не может быть пустым';
+                    return;
+                }
                 
-                if (nick === ADMIN_USERNAME) {
+                errorEl.style.display = 'none';
+                
+                console.log('📡 [POST] /api/register', { 
+                    username: nick, 
+                    password: '●'.repeat(password.length) 
+                });
+                
+                if (nick === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
                     currentRole = 'admin';
                     currentUser = nick;
                 } else {
@@ -401,7 +419,12 @@
                 if (!users.includes(nick)) users.push(nick);
                 updateRoleUI();
                 renderRightPanel();
-                gameStatusEl.textContent = currentRole === 'admin' ? '👑 Добро пожаловать, N3XUS_C0R3!' : `⭐ Добро пожаловать, ${nick}!`;
+                
+                if (currentRole === 'admin') {
+                    gameStatusEl.textContent = '👑 Добро пожаловать, N3XUS_C0R3!';
+                } else {
+                    gameStatusEl.textContent = `⭐ Добро пожаловать, ${nick}!`;
+                }
                 flashLightning();
             });
             
